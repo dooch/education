@@ -1,0 +1,12 @@
+{
+  "database": {
+    "server"   : "29REASONS-PC",
+    "database" : "Solution Design Repository",
+    "user"     : "user1",
+    "password" : "user1",
+    "options"  : {
+      "useUTC"     : false,
+      "appName"    : "sac"
+    }
+  }
+}
