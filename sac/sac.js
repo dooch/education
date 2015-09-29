@@ -30,15 +30,20 @@ if (Meteor.isClient) {
                 event.preventDefault();
                 var playerNameVar = event.target.playerName.value;
                 var currentUserId = Meteor.userId();
+              // Meteor.call('insertPlayerData');
+              // adding an argument in the method call
+                Meteor.call('insertPlayerData', playerNameVar);
+
+
 /*                PlayerList.insert({
                     name: playerNameVar,
                     score: 0,
                     createdBy: currentUserId
-                    });*/
-               Meteor.call('insertPlayerData');
-               // console.log(playerNameVar);
-               // console.log("Form submitted");
-               // console.log(event.type);
+                    });
+
+                console.log(playerNameVar);
+                console.log("Form submitted");
+                console.log(event.type);*/
                }
         });
 
@@ -59,21 +64,29 @@ if (Meteor.isClient) {
                  },
           'click .increment': function(){
                   // code goes here
+
                   var selectedPlayer = Session.get('selectedPlayer');
+                 // Meteor.call('modifyPlayerScore', selectedPlayer);
+                  Meteor.call('modifyPlayerScore', selectedPlayer, 5);
+
+               /* var selectedPlayer = Session.get('selectedPlayer');
                   console.log(selectedPlayer);
                   //PlayerList.update(selectedPlayer, {score: 5});
                   //PlayerList.update(selectedPlayer, {$set: {score: 5} });
-                  PlayerList.update(selectedPlayer, {$inc: {score: 5} });
+                  PlayerList.update(selectedPlayer, {$inc: {score: 5} });*/
+
                   },
           'click .decrement': function(){
                   var selectedPlayer = Session.get('selectedPlayer');
-                  PlayerList.update(selectedPlayer, {$inc: {score: -5} });
+                  Meteor.call('modifyPlayerScore', selectedPlayer, -5);
                   },
            'click .remove': function(){
-                   // code goes here
                    var selectedPlayer = Session.get('selectedPlayer');
                    console.log(selectedPlayer);
-                   PlayerList.remove(selectedPlayer);
+                   Meteor.call('removePlayerData', selectedPlayer);
+
+                  // move the capability to a method on the server
+                  // PlayerList.remove(selectedPlayer);
                    }
         });
 
@@ -88,16 +101,34 @@ if (Meteor.isServer) {
             });
 
       Meteor.methods({
-            'insertPlayerData': function(){
+            'insertPlayerData': function(playerNameVar){
             console.log("Hello world");
             var currentUserId = Meteor.userId();
 
             PlayerList.insert({
-                name: "David",
+                name: playerNameVar,
                 score: 0,
                 createdBy: currentUserId
                 });
-            }
+            },
+
+             'removePlayerData': function(selectedPlayer){
+                // non users can only remove entries that belong to their userid
+                var currentUserId = Meteor.userId();
+                PlayerList.remove({_id: selectedPlayer, createdBy: currentUserId});
+
+
+             },
+
+             'modifyPlayerScore': function(selectedPlayer,scoreValue){
+                // not as secure as users can cause issues from within the console
+                // PlayerList.update(selectedPlayer, {$inc: {score: scoreValue} });
+
+                // making it a little more secure now
+                var currentUserId = Meteor.userId();
+                PlayerList.update( {_id: selectedPlayer, createdBy: currentUserId},
+                {$inc: {score: scoreValue} });
+             }
       });
 
    Meteor.startup(function () {
