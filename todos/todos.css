@@ -1,0 +1,17 @@
+/* CSS declarations go here */
+[name=todoItem]{
+    border:none;
+    font-family: "Times New Roman";
+    font-size: 95%;
+    padding:0.2em;
+}
+    :focus {
+        background-color: #f9f9f9;
+        cursor:pointer;
+    }
+
+    :hover{
+        background-color: #f9f9f9;
+        cursor:default;
+        outline:none;
+    }
