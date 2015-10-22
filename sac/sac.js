@@ -1,8 +1,7 @@
 PlayerList = new Mongo.Collection('Players');
+IPs = new Mongo.Collection('ips');
 
 if (Meteor.isClient) {
-
-  //adding my first helper functions
 
       Template.leaderboard.helpers({
       'player': function(){
@@ -10,7 +9,6 @@ if (Meteor.isClient) {
                 return PlayerList.find({},{sort: {score: -1, name: 1}})
                 },
       'selectedClass': function(){
-           //return this._id
                var playerId = this._id;
                var selectedPlayer = Session.get('selectedPlayer');
                if(playerId == selectedPlayer){
@@ -23,59 +21,26 @@ if (Meteor.isClient) {
                 }
     });
 
-    // adding events to the website
     Template.addPlayerForm.events({
         'submit form': function(){
-                // code goes here
                 event.preventDefault();
                 var playerNameVar = event.target.playerName.value;
                 var currentUserId = Meteor.userId();
-              // Meteor.call('insertPlayerData');
-              // adding an argument in the method call
                 Meteor.call('insertPlayerData', playerNameVar);
-
-
-/*                PlayerList.insert({
-                    name: playerNameVar,
-                    score: 0,
-                    createdBy: currentUserId
-                    });
-
-                console.log(playerNameVar);
-                console.log("Form submitted");
-                console.log(event.type);*/
                }
         });
-
-   //adding my first events
+//this is a test
     Template.leaderboard.events({
         'click .player': function(){
                  var playerId = this._id;
                  Session.set('selectedPlayer', playerId);
-                 var selectedPlayer = Session.get('selectedPlayer');
+	                 var selectedPlayer = Session.get('selectedPlayer');
                  console.log(selectedPlayer);
-
-                /*// console.log("You clicked .player element");
-                 Session.set('selectedPlayer', 'session value test');
-                 Session.get('selectedPlayer');
-                 var selectedPlayer = Session.get('selectedPlayer');
-                 console.log(selectedPlayer);*/
-
                  },
-          'click .increment': function(){
-                  // code goes here
-
+/*          'click .increment': function(){
                   var selectedPlayer = Session.get('selectedPlayer');
-                 // Meteor.call('modifyPlayerScore', selectedPlayer);
                   Meteor.call('modifyPlayerScore', selectedPlayer, 5);
-
-               /* var selectedPlayer = Session.get('selectedPlayer');
-                  console.log(selectedPlayer);
-                  //PlayerList.update(selectedPlayer, {score: 5});
-                  //PlayerList.update(selectedPlayer, {$set: {score: 5} });
-                  PlayerList.update(selectedPlayer, {$inc: {score: 5} });*/
-
-                  },
+                  },*/
           'click .decrement': function(){
                   var selectedPlayer = Session.get('selectedPlayer');
                   Meteor.call('modifyPlayerScore', selectedPlayer, -5);
@@ -84,13 +49,17 @@ if (Meteor.isClient) {
                    var selectedPlayer = Session.get('selectedPlayer');
                    console.log(selectedPlayer);
                    Meteor.call('removePlayerData', selectedPlayer);
+                   },
 
-                  // move the capability to a method on the server
-                  // PlayerList.remove(selectedPlayer);
-                   }
+          'click .increment': function() {
+            var playerId = Session.get('selectedPlayer');
+            Meteor.call('givePoints', playerId, function(err) {
+              if (err)
+                alert(err.reason);
+            });
+          }
         });
 
-    // adding my subscriptions
     Meteor.subscribe('thePlayers');
 }
 
@@ -102,7 +71,6 @@ if (Meteor.isServer) {
 
       Meteor.methods({
             'insertPlayerData': function(playerNameVar){
-            console.log("Hello world");
             var currentUserId = Meteor.userId();
 
             PlayerList.insert({
@@ -113,22 +81,38 @@ if (Meteor.isServer) {
             },
 
              'removePlayerData': function(selectedPlayer){
-                // non users can only remove entries that belong to their userid
                 var currentUserId = Meteor.userId();
                 PlayerList.remove({_id: selectedPlayer, createdBy: currentUserId});
-
-
              },
 
              'modifyPlayerScore': function(selectedPlayer,scoreValue){
-                // not as secure as users can cause issues from within the console
-                // PlayerList.update(selectedPlayer, {$inc: {score: scoreValue} });
-
-                // making it a little more secure now
                 var currentUserId = Meteor.userId();
                 PlayerList.update( {_id: selectedPlayer, createdBy: currentUserId},
                 {$inc: {score: scoreValue} });
-             }
+             },
+
+  'givePoints': function(playerId) {
+                 console.log(playerId);
+                 check(playerId, String);
+
+                 // we want to use a date with a 1-day granularity
+                 var startOfDay = new Date;
+                 startOfDay.setHours(0, 0, 0, 0);
+
+                 // the IP address of the caller
+                 ip = this.connection.clientAddress;
+
+                 // check by ip and date (these should be indexed)
+                 if (IPs.findOne({ip: ip, date: startOfDay})) {
+                   throw new Meteor.Error(403, 'You already voted!');
+                 } else {
+                   // the player has not voted yet
+                   Players.update(playerId, {$inc: {score: 5}});
+
+                   // make sure she cannot vote again today
+                   IPs.insert({ip: ip, date: startOfDay});
+                 }
+               }
       });
 
    Meteor.startup(function () {
