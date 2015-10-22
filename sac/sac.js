@@ -50,14 +50,13 @@ if (Meteor.isClient) {
                    console.log(selectedPlayer);
                    Meteor.call('removePlayerData', selectedPlayer);
                    },
-
           'click .increment': function() {
-            var playerId = Session.get('selectedPlayer');
-            Meteor.call('givePoints', playerId, function(err) {
-              if (err)
-                alert(err.reason);
-            });
-          }
+                  var playerId = Session.get('selectedPlayer');
+                  Meteor.call('givePoints', playerId, function(err) {
+                  if (err)
+                    alert(err.reason);
+                    });
+                }
         });
 
     Meteor.subscribe('thePlayers');
@@ -91,7 +90,7 @@ if (Meteor.isServer) {
                 {$inc: {score: scoreValue} });
              },
 
-  'givePoints': function(playerId) {
+            'givePoints': function(playerId) {
                  console.log(playerId);
                  check(playerId, String);
 
