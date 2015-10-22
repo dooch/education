@@ -1,8 +1,8 @@
 <head>
-  <title>Leaderboard</title>
+  <title>Metric Tracker</title>
 </head>
 <body>
-  <h1>Leaderboard</h1>
+  <h1>Metric Leaderboard</h1>
     {{>leaderboard}}
     {{> loginButtons}}
 </body>
@@ -10,11 +10,23 @@
 <template name="leaderboard">
   <ul>
     {{> addPlayerForm}}
-
-    {{#each player}}
-        <li class="player {{selectedClass}}">{{name}}: {{score}}</li>
-    {{/each}}
-
+      <table class="table">
+          <thead>
+          <tr>
+                <th>Name</th>
+                <th>Points</th>
+          </tr>
+          </thead>
+          <tbody>
+              {{#each player}}
+              <tr class="player {{selectedClass}}">
+              <!--<li class="player {{selectedClass}}">{{name}}: {{score}}</li>-->
+                    <td>{{name}}</td>
+                    <td>{{score}}</td>
+              </tr>
+              {{/each}}
+          </tbody>
+      </table>
     <input type="button" class="increment" value="Give 5 Points">
     <input type="button" class="decrement" value="Take 5 Points">
 

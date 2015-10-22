@@ -29,7 +29,7 @@ if (Meteor.isClient) {
                 Meteor.call('insertPlayerData', playerNameVar);
                }
         });
-//this is a test
+
     Template.leaderboard.events({
         'click .player': function(){
                  var playerId = this._id;
@@ -107,7 +107,7 @@ if (Meteor.isServer) {
                    throw new Meteor.Error(403, 'You already voted!');
                  } else {
                    // the player has not voted yet
-                   Players.update(playerId, {$inc: {score: 5}});
+                   PlayerList.update(playerId, {$inc: {score: 5}});
 
                    // make sure she cannot vote again today
                    IPs.insert({ip: ip, date: startOfDay});
